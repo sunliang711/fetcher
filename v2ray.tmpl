@@ -1,0 +1,258 @@
+{{ define "tcp" }}
+			{
+				"connectionReuse": true,
+				"header": {
+					"type": "http",
+					"request": {
+						"version": "1.1",
+						"method": "GET",
+						"path": ["/"],
+						"headers": {
+							"Host": ["{{.Host}}"],
+							"User-Agent": ["Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46"],
+							"Accept-Encoding": ["gzip, deflate"],
+							"Connection": ["keep-alive"],
+							"Pragma": "no-cache"
+						}
+					},
+					"response": {
+						"version": "1.1",
+						"status": "200",
+						"reason": "OK",
+						"headers": {
+							"Content-Type": ["application/octet-stream","video/mpeg"],
+							"Transfer-Encoding": ["chunked"],
+							"Connection": ["keep-alive"],
+							"Pragma": "no-cache"
+						}
+					}
+				}
+			}
+{{ end }}
+
+{{ define "kcp" }}
+		{
+			"mtu": 1350,
+			"tti": 50,
+			"uplinkCapacity": 12,
+			"downlinkCapacity": 100,
+			"congestion": false,
+			"readBufferSize": 2,
+			"writeBufferSize": 2,
+			"header": {
+				"type": "{{.Type}}",
+				"request": null,
+				"response": null
+			}
+		}
+{{ end }}
+
+{{ define "ws" }}
+		{
+			"connectionReuse": true,
+			"path": "{{.Path}}",
+			"headers": {
+				"Host": "{{.Host}}"
+			}
+		}
+{{ end }}
+
+{{ define "h2" }}
+		{
+			"path": "{{.Path}}",
+			"headers": {
+				"Host": "{{.Host}}"
+			}
+		}
+{{ end }}
+
+{{ define "outbound" }}
+    {
+        "tag": "{{.ps}}",
+        "protocol": "vmess",
+        "settings": {
+            "vnext": [
+                {
+                    // BEGIN outbound address:{{.address}}
+                    "address": "{{.address}}",
+                    "port": {{.port}},
+                    "users": [
+                        {
+                            "id": "{{.id}}",
+                            "alterId": {{.alterId}},
+                            "security": "auto"
+                        }
+                    ]
+                }
+            ]
+        },
+        "streamSettings": {
+            "sockopt": {
+                // for transparent proxy
+                "mark": 255
+            },
+            "network": "{{.network}}",
+            "security": "{{.security}}",
+            "tlsSettings": {{.tlsSettings}},
+            "tcpSettings": {{.tcpSettings}},
+            "kcpSettings": {{.kcpSettings}},
+            "wsSettings": {{.wsSettings}},
+            "httpSettings": {{.httpSettings}}
+        },
+        "mux": {
+            "enabled": true
+        }
+    }
+{{ end }}
+
+{{ define "single-outbound" }}
+{
+  "log": {
+    "access": "/dev/null",
+    "error": "/tmp/v2ray_log.log",
+    "loglevel": "error"
+  },
+  "inbounds": [
+    {
+      "tag": "tproxy",
+      "protocol": "dokodemo-door",
+      "listen": "0.0.0.0",
+      "port": 1280,
+      "settings": {
+        "network": "tcp,udp",
+        "followRedirect": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    },
+    {
+      "tag": "http",
+      "protocol": "http",
+      "port": 1282,
+      "settings": {
+        "accounts": [
+          {
+            "user": "user",
+            "pass": "usernopass"
+          }
+        ],
+        "timeout": 0,
+        "userLevel": 0,
+        "allowTransparent": false
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    },
+    {
+      "tag": "socks5",
+      "protocol": "socks",
+      "port": 1281,
+      "settings": {
+        "auth": "password",
+        "accounts": [
+          {
+            "user": "user",
+            "pass": "usernopass"
+          }
+        ],
+        "userLevel": 0,
+        "ip": "0.0.0.0",
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    },
+    {
+      "tag": "dns",
+      "protocol": "dokodemo-door",
+      "port": 7913,
+      "settings": {
+        "address": "8.8.8.8",
+        "port": 53,
+        "network": "udp",
+        "timeout": 0,
+        "followRedirect": false
+      }
+    }
+  ],
+  "outbounds":[
+{{.outbound}}
+  ]
+}
+{{ end }}
+
+{{ define "inbound" }}
+      {
+        "BEGIN socks":"",
+        "tag":"{{.ps}}",
+        "protocol": "socks",
+        "BEGIN port":"{{.port}}:{{.ps}}",
+        "port": {{.port}},
+        "END port":"",
+        "settings": {
+          "auth": "noauth",
+          "udp": true
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": [
+            "http",
+            "tls"
+          ]
+        },
+        "END socks":""
+      }
+{{ end }}
+
+{{ define  "multi-outbounds" }}
+{
+    "log": {
+      "loglevel": "warning",
+      "access": "/tmp/v2ray-backend.log",
+      "error": "/tmp/v2ray-backend.log"
+    },
+    "inbounds": [
+      //InPorts: {{- range $index, $ele :=. -}}{{ if $index }},{{end}}{{$ele.InPort}}{{- end}}
+      {{- range $index, $ele :=. -}}
+        {{ if $index }}    , {{ end }}
+        {{.InboundString}}
+      {{- end }}
+    ],
+    "outbounds": [
+    {{- range $index,$ele :=. -}}
+        {{ if $index }}    , {{ end }}
+        {{ .OutboundString }}
+    {{- end }}
+    ],
+    "routing": {
+      "domainStrategy": "IPOnDemand",
+      "rules": [
+      {{- range $index, $ele := . -}}
+        {{ if $index }}, {{ end }}
+        {
+            "type":"field",
+            "inboundTag":["{{.Ps}}"],
+            "outboundTag":"{{.Ps}}"
+        }
+
+      {{- end }}
+      ]
+    }
+ }
+
+{{ end }}
