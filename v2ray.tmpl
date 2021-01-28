@@ -222,9 +222,9 @@
 {{ define  "multi-outbounds" }}
 {
     "log": {
-      "loglevel": "warning",
-      "access": "/tmp/v2ray-backend.log",
-      "error": "/tmp/v2ray-backend.log"
+      "loglevel": "info",
+      "access": "/tmp/v2relay-backend.log",
+      "error": "/tmp/v2relay-backend.log"
     },
     "inbounds": [
       //InPorts: {{- range $index, $ele :=. -}}{{ if $index }},{{end}}{{$ele.InPort}}{{- end}}

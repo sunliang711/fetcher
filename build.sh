@@ -96,7 +96,9 @@ pack(){
     build
     dirName="fetcher-$(uname -s)-$(uname -m)"
     mkdir -p ${dirName}
-    cp ${exeName} fetcher.yaml ${dirName}
+
+    cp ${exeName} fetcher.yaml v2ray.tmpl ${dirName}
+
     tarFile="${dirName}.tar.bz2"
     echo "Create tar file: ${tarFile}..."
     tar -jcvf "${tarFile}" ${dirName}
