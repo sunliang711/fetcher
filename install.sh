@@ -10,6 +10,7 @@ install(){
     dest="$(realpath $dest)"
 
     tarFile="${link##*/}"
+    dirName="${tarFile%.tar.bz2}"
 
     cd /tmp
     if [ ! -e ${tarFile} ];then
@@ -18,6 +19,8 @@ install(){
     fi
 
     tar -C ${dest} -jxvf ${tarFile}
+
+    cd ${dest} && mv ${dirName} fetcher
 
 }
 
