@@ -95,8 +95,8 @@ func fetch(cmd *cobra.Command) {
 	logrus.Infof("template file: %v", templateFile)
 	logrus.Infof("start port: %v", startPort)
 
-	if len(subscriptions) == 0 {
-		logrus.Warn("Cannot find subscrption url,not specify config file?")
+	if len(subscriptions) == 0 && len(customOuts) == 0 {
+		logrus.Warn("Cannot find subscrption url or custom outbound,not specify config file?")
 	}
 	configString, err := utils.Parse(subscriptions, templateFile, startPort, customOuts)
 	if err != nil {
@@ -106,5 +106,6 @@ func fetch(cmd *cobra.Command) {
 	if err != nil {
 		logrus.Fatalf("Write config file error: %v", err)
 	}
+	logrus.Infof("Config write to file: %v OK", viper.GetString("output_file"))
 
 }

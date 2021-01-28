@@ -1,0 +1,35 @@
+# log level
+level: info
+template_file: v2ray.tmpl
+start_port: 13000
+output_file: config.json
+# unit: second
+download_timeout: 8000
+
+subscriptions:
+  -
+    # 名称,任意起
+    name: crossxz
+    # 订阅链接
+    url: https://sub.bbapk1.xyz/24cmnZaz49ac45861f/V2ray
+    # 过滤规则,w表示白名单，b表示黑名单，可以多层链接
+    rule: w:VIP2|b:game
+    enable: true
+  -
+    name: xx
+    url: https://sub.bbapk2.xyz/24cmnZaz49ac45861f/V2ray
+    rule: w:VIP2
+    enable: false
+
+# 自建配置
+custom_outbounds:
+  -
+    # 备注名
+    ps: custom1
+    # 自建配置文件,文件中只需要完整的outbound配置信息，{}
+    filename: cfg
+    enable: true
+  -
+    ps: custom2
+    filename: ddd
+    enable: false

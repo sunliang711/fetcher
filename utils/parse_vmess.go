@@ -40,7 +40,7 @@ func init() {
 }
 
 func parse_vmess(node string, full bool) (string, string, error) {
-	logrus.Infof(">> parse vmess..")
+	logrus.Infof(">> 1 parse vmess..")
 	node = node[len(PrefixVmess):]
 
 	decoded, err := Decode(node)
@@ -105,7 +105,7 @@ func parse_vmess(node string, full bool) (string, string, error) {
 // @param full 表示把outbound生成到完整的单outbound的配置文件中
 // 如果要生成多outbounds则用false
 func convert_vmess(node string, full bool) (string, string, error) {
-	logrus.Infof(">> convert vmess")
+	logrus.Infof(">> 2 convert vmess")
 
 	var (
 		v2Path string

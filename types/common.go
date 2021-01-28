@@ -10,6 +10,7 @@ type Subscription struct {
 type CustomOutbound struct {
 	Ps       string
 	Filename string
+	Enable   bool
 }
 
 type ListMode int

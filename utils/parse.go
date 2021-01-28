@@ -25,20 +25,34 @@ const (
 	SEP_ITEM      = ","
 )
 
-func Parse(subs []types.Subscription, templateFile string, startPort int, custom []types.CustomOutbound) (string, error) {
+func Parse(subs []types.Subscription, templateFile string, startPort int, customs []types.CustomOutbound) (string, error) {
+	initTemplate(templateFile)
 	ret := make(map[string]string)
 	// 处理机场订阅链接
 	for _, sub := range subs {
 		if !sub.Enable {
 			continue
 		}
-		err = singleParse(sub.Name, sub.URL, sub.Rule, ret, false, templateFile)
+		err = singleParse(sub.Name, sub.URL, sub.Rule, ret, false)
 		if err != nil {
 			logrus.Errorf("single parse error: %v", err)
 		}
 	}
 	// 添加自己额外的配置(比如自建节点)
-	// TODO custom
+	for _, custom := range customs {
+		if !custom.Enable {
+			continue
+		}
+		logrus.Infof("* Read custom outbound: %v", custom.Ps)
+		customOutboundString, err := ioutil.ReadFile(custom.Filename)
+		if err != nil {
+			logrus.Errorf("** Read custom outbound: %v error: %v, ignore it", custom.Ps, err)
+			continue
+		}
+		newName := fmt.Sprintf("custom-%v", custom.Ps)
+		logrus.Infof("** Read custom outbound: %v OK", newName)
+		ret[newName] = string(customOutboundString)
+	}
 
 	return makeV2rayConfigFile(ret, startPort)
 }
@@ -46,9 +60,8 @@ func Parse(subs []types.Subscription, templateFile string, startPort int, custom
 // single_parse 解析一个机场的订阅链接, 生成map，key为ps，value为单独的outbound(single=false)或者这个由outbound构成的完成的v2ray配置文件(inbounds+outbound)(single=true)
 // @param name为了防止多个机场的ps重复，因此在每个ps前面加个这个机场的name
 // @param nodesContent 由多行组成，每行是一个base64编码的单一配置信息(也就是后来的outbound的编码格式)
-func singleParse(name string, subURL string, filterConfig string, ret map[string]string, single bool, tmplFile string) error {
+func singleParse(name string, subURL string, filterConfig string, ret map[string]string, single bool) error {
 	logrus.Infof("> single parse %v...", name)
-	initTemplate(tmplFile)
 
 	rawString, err := download(subURL, nil)
 	if err != nil {
@@ -74,7 +87,7 @@ func singleParse(name string, subURL string, filterConfig string, ret map[string
 			logrus.WithFields(logrus.Fields{"node": node, "error": err}).Errorf("parse node error")
 		} else {
 			newName := fmt.Sprintf("%v-%v", name, ps)
-			logrus.Infof("> add parsed node: %v to result", newName)
+			logrus.Infof(">> 3 add parsed node: %v to result", newName)
 			ret[newName] = parsed
 		}
 	}
@@ -222,7 +235,7 @@ func filter(nodes map[string]string, cfgs []*types.FilterConfig) {
 			for ps, _ := range nodes {
 				for _, black := range cfg.Lists {
 					if strings.Contains(ps, black) {
-						logrus.Infof("delete black list item: %s", ps)
+						logrus.Infof(">> filter: delete black list item: %s", ps)
 						delete(nodes, ps)
 					}
 				}
@@ -238,7 +251,7 @@ func filter(nodes map[string]string, cfgs []*types.FilterConfig) {
 					}
 				}
 				if !exist {
-					logrus.Infof("delete non white list item: %s", ps)
+					logrus.Infof(">> filter: delete non white list item: %s", ps)
 					delete(nodes, ps)
 				}
 			}

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -33,13 +32,12 @@ func download(subscriptionURL string, headers map[string][]string) (string, erro
 		}
 	}
 
-	downloadTimeoutEnv := os.Getenv("DOWNLOAD_TIMEOUT")
-	downloadTimeout, err := strconv.Atoi(downloadTimeoutEnv)
-	if err != nil {
-		logrus.Debugf("Use default_download_timeout: %v", default_download_timeout)
+	downloadTimeout := viper.GetInt("download_timeout")
+	if downloadTimeout == 0 {
+		logrus.Infof("Use default_download_timeout: %v", default_download_timeout)
 		downloadTimeout = default_download_timeout
 	} else {
-		logrus.Debugf("Use env DOWNLOAD_TIMEOUT: %v", downloadTimeout)
+		logrus.Infof("Use config download_timeout: %v", downloadTimeout)
 	}
 
 	client := http.Client{Timeout: time.Millisecond * time.Duration(downloadTimeout)}
