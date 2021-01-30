@@ -1,7 +1,6 @@
 .DS_Store
 *.swp
 .idea/
-fetcher
-fetcher*.tar.bz2
+fetcher*
 customConfig
 config.json

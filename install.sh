@@ -1,8 +1,11 @@
 #!/bin/bash
+set -e
+
 link="https://gitee.com/sunliang711/fetcher/attach_files/602033/download/fetcher-Linux-x86_64.tar.bz2"
 
 install(){
     dest=${1:?'missing install location'}
+    echo "dest: ${dest}"
     if [ ! -d ${dest} ];then
         echo "Create ${dest}..."
         mkdir -p ${dest}

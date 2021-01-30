@@ -81,28 +81,43 @@ fi
 # function is hidden when begin with '_'
 ###############################################################################
 # TODO
+set -e
 exeName=fetcher
-build(){
+_build(){
+    local os=${1:?'missing GOOS'}
+    local arch=${2:?'missing GOARCH'}
+    local resultDir="${exeName}-${os}-${arch}"
+    if [ ! -d ${resultDir} ];then
+        mkdir -p ${resultDir}
+    fi
+
     gitHash="$(git rev-parse HEAD)"
     buildTime="$(date +%FT%T)"
     machine="$(uname -s)-$(uname -m)"
     ldflags="-w -s -X fetcher/cmd.GitHash=${gitHash} -X fetcher/cmd.BuildTime=${buildTime} -X fetcher/cmd.Machine=${machine}"
-    echo "build ${exeName}..."
-    go build -o ${exeName} -ldflags "${ldflags}" main.go
+    echo "Build to ${resultDir}..."
+    GOOS=${os} GOARCH=${arch} go build -o ${resultDir}/${exeName} -ldflags "${ldflags}" main.go
+    cp fetcher.yaml v2ray.tmpl ${resultDir}
+}
+
+build(){
+    _build linux amd64
+    _build linux arm64
+}
+
+_pack(){
+    local os=${1:?'missing GOOS'}
+    local arch=${2:?'missing GOARCH'}
+    local resultDir="${exeName}-${os}-${arch}"
+
+    _build $os $arch
+    tar -jcvf ${resultDir}.tar.bz2 ${resultDir}
+    /bin/rm -rf ${resultDir}
 }
 
 pack(){
-    cd ${this}
-    build
-    dirName="fetcher-$(uname -s)-$(uname -m)"
-    mkdir -p ${dirName}
-
-    cp ${exeName} fetcher.yaml v2ray.tmpl ${dirName}
-
-    tarFile="${dirName}.tar.bz2"
-    echo "Create tar file: ${tarFile}..."
-    tar -jcvf "${tarFile}" ${dirName}
-    /bin/rm -rf "${dirName}"
+    _pack linux amd64
+    _pack linux arm64
 }
 
 em(){
