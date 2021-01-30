@@ -37,6 +37,8 @@ install(){
     if [ ! -e ${tarFile} ];then
         echo "Download fetcher: ${link} ..."
         curl -LO "${link}" || { echo "Download failed"; exit 1; }
+    else
+        echo "Use /tmmp/${tarFile} cache file"
     fi
 
     tar -C ${dest} -jxvf ${tarFile}
