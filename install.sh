@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-link="https://gitee.com/sunliang711/fetcher/attach_files/602033/download/fetcher-Linux-x86_64.tar.bz2"
+linuxARMLink="https://gitee.com/sunliang711/fetcher/attach_files/603298/download/fetcher-linux-arm64.tar.bz2"
+linuxAMD64Link="https://gitee.com/sunliang711/fetcher/attach_files/603299/download/fetcher-linux-amd64.tar.bz2"
 
 install(){
     dest=${1:?'missing install location'}
@@ -11,6 +12,23 @@ install(){
         mkdir -p ${dest}
     fi
     dest="$(realpath $dest)"
+
+    case $(uname) in
+        Linux)
+            case $(uname -m) in
+                aarch64)
+                    link="${linuxARMLink}"
+                    ;;
+                x86_64)
+                    link="${linuxAMD64Link}"
+                    ;;
+            esac
+        ;;
+        *)
+            echo "Only support Linux currently"
+            exit 1
+        ;;
+    esac
 
     tarFile="${link##*/}"
     dirName="${tarFile%.tar.bz2}"
