@@ -8,7 +8,7 @@ set -e
 install(){
     dest=${1:?'missing install location'}
     # default version
-    version=${2:-1.2}
+    version=${2:-1.3}
     linuxAMD64Link="https://source711.oss-cn-shanghai.aliyuncs.com/fetcher/${version}/fetcher-linux-amd64.tar.bz2"
     linuxARMLink="https://source711.oss-cn-shanghai.aliyuncs.com/fetcher/${version}/fetcher-linux-arm64.tar.bz2"
 

@@ -13,7 +13,7 @@ subscriptions:
     # 订阅链接
     url: https://sub.bbapk1.xyz/24cmnZaz49ac45861f/V2ray
     # 过滤规则,w表示白名单，b表示黑名单，可以多层链接
-    rule: w:VIP2|b:game
+    rule: w:VIP2|b:游戏
     enable: true
   -
     name: xx
