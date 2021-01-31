@@ -1,11 +1,17 @@
 #!/bin/bash
 set -e
 
-linuxARMLink="https://gitee.com/sunliang711/fetcher/attach_files/603298/download/fetcher-linux-arm64.tar.bz2"
-linuxAMD64Link="https://gitee.com/sunliang711/fetcher/attach_files/603299/download/fetcher-linux-amd64.tar.bz2"
+#linuxARMLink="https://gitee.com/sunliang711/fetcher/attach_files/603298/download/fetcher-linux-arm64.tar.bz2"
+#linuxAMD64Link="https://gitee.com/sunliang711/fetcher/attach_files/603299/download/fetcher-linux-amd64.tar.bz2"
+
 
 install(){
     dest=${1:?'missing install location'}
+    # default version
+    version=${2:-1.2}
+    linuxAMD64Link="https://source711.oss-cn-shanghai.aliyuncs.com/fetcher/${version}/fetcher-linux-amd64.tar.bz2"
+    linuxARMLink="https://source711.oss-cn-shanghai.aliyuncs.com/fetcher/${version}/fetcher-linux-arm64.tar.bz2"
+
     echo "dest: ${dest}"
     if [ ! -d ${dest} ];then
         echo "Create ${dest}..."
@@ -47,4 +53,4 @@ install(){
 
 }
 
-install $1
+install "$@"
